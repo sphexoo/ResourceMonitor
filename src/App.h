@@ -1,7 +1,7 @@
 #pragma once
 #include "wx/wx.h"
 
-#include "FrameMain.h"
+#include "Frame.h"
 
 class App : public wxApp
 {
@@ -10,7 +10,7 @@ public:
 	~App();
 
 private:
-	FrameMain* m_Frame = nullptr;
+	Frame* m_Frame = nullptr;
 
 public:
 	virtual bool OnInit();

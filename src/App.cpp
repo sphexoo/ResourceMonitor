@@ -14,7 +14,7 @@ App::~App()
 
 bool App::OnInit()
 {
-	m_Frame = new FrameMain();
+	m_Frame = new Frame();
 	m_Frame->Show();
 	return true;
 }

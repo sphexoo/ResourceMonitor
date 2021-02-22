@@ -2,11 +2,11 @@
 #include "wx/wx.h"
 #include "Query.h"
 
-class FrameMain : public wxFrame
+class Frame : public wxFrame
 {
 public:
-	FrameMain();
-	~FrameMain();
+	Frame();
+	~Frame();
 
 	void OnClick_ButtonStart(wxCommandEvent& e);
 	void OnClick_ButtonStop(wxCommandEvent& e);
@@ -14,12 +14,16 @@ public:
 	void UpdateFrame();
 
 public:
-	wxListBox* m_List = nullptr;
+	wxStaticText* m_Text_Status = nullptr;
+	wxStaticText* m_Text_DataRate = nullptr;
 	wxButton* m_ButtonStart = nullptr;
 	wxButton* m_ButtonStop = nullptr;
 
 private:
-	Query m_Query{ std::bind(&FrameMain::UpdateFrame, this) };
+	Query m_Query{ std::bind(&Frame::UpdateFrame, this) };
+
+	std::string text_datarate{ "Data rate: " };
+	std::string text_mbits{ " Mbit/s" };
 
 	wxDECLARE_EVENT_TABLE();
 };

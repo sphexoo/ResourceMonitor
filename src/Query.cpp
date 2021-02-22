@@ -5,12 +5,13 @@
 Query::Query(std::function<void(void)> fcn_ptr)
     : m_QueryReportFcn(fcn_ptr)
 {
-
+    InitQuery();
 }
 
 Query::~Query()
 {
-
+    StopWorker();
+    CloseQuery();
 }
 
 void Query::StartWorker()
@@ -18,7 +19,7 @@ void Query::StartWorker()
     if (!m_IsRunning)
     {
         m_IsRunning = true;
-        m_WorkerThread = std::thread{ [this] { this->RunQueryThread(); } };
+        m_WorkerThread = std::thread{ [this] { this->RunQuery(); } };
     }
 }
 
@@ -60,7 +61,7 @@ void Query::InitQuery()
     status = PdhCollectQueryData(m_Query);
     if (status != ERROR_SUCCESS)
     {
-        OutputDebugString(L"\n[ERROR]: PdhCollectQueryData");
+        OutputDebugString(L"\n[ERROR]: PdhCollectQueryData failed.");
         CloseQuery();
         return;
     }
@@ -71,25 +72,28 @@ void Query::RunQuery()
     PDH_STATUS status;
     PDH_FMT_COUNTERVALUE DisplayValue;
     DWORD CounterType;
-
-    status = PdhCollectQueryData(m_Query);
-    if (status != ERROR_SUCCESS)
+    while (m_IsRunning)
     {
-        OutputDebugString(L"\n[ERROR]: PdhCollectQueryData");
-        CloseQuery();
-        return;
-    }
+        status = PdhCollectQueryData(m_Query);
+        if (status != ERROR_SUCCESS)
+        {
+            OutputDebugString(L"\n[ERROR]: PdhCollectQueryData");
+            CloseQuery();
+            return;
+        }
 
-    status = PdhGetFormattedCounterValue(m_Counter, PDH_FMT_DOUBLE, &CounterType, &DisplayValue);
-    if (status != ERROR_SUCCESS)
-    {
-        OutputDebugString(L"\n[ERROR]: PdhGetFormattedCounterValue failed");
-        CloseQuery();
-        return;
-    }
+        status = PdhGetFormattedCounterValue(m_Counter, PDH_FMT_DOUBLE, &CounterType, &DisplayValue);
+        if (status != ERROR_SUCCESS)
+        {
+            OutputDebugString(L"\n[ERROR]: PdhGetFormattedCounterValue failed");
+            CloseQuery();
+            return;
+        }
 
-    m_ReceivedBytes = DisplayValue.doubleValue;
-    m_QueryReportFcn();
+        m_ReceivedBytes = DisplayValue.doubleValue;
+        m_QueryReportFcn();
+        Sleep(m_WaitTime);
+    }
 }
 
 void Query::CloseQuery()
@@ -98,15 +102,6 @@ void Query::CloseQuery()
     {
         PdhCloseQuery(m_Query);
         m_Query = NULL;
-    }
-}
-
-void Query::RunQueryThread()
-{
-    while (m_IsRunning)
-    {
-        RunQuery();
-        Sleep(m_WaitTime);
     }
 }
 

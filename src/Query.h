@@ -12,10 +12,10 @@ public:
 	void InitQuery();
 	void RunQuery();
 	void CloseQuery();
-	void RunQueryThread();
 	void StartWorker();
 	void StopWorker();
 
+public:
 	double GetData();
 
 private:
@@ -23,7 +23,7 @@ private:
 	HCOUNTER m_Counter = NULL;
 
 	double m_ReceivedBytes = 0.0;
-	int m_WaitTime = 500;
+	int m_WaitTime = 250;
 
 	std::thread m_WorkerThread;
 	bool m_IsRunning = false;
